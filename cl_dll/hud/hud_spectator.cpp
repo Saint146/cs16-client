@@ -445,7 +445,7 @@ int CHudSpectator::Draw(float flTime)
 		gEngfuncs.pfnClientCmd(cmd);
 		if ( m_lastAutoDirector == 0.0 )
 		{
-			if ( m_lastAutoDirector == 0.0 && g_iUser1 == OBS_CHASE_LOCKED )
+			if ( g_iUser1 == OBS_CHASE_LOCKED )
 			{
 				SetModes(OBS_CHASE_FREE, INSET_OFF);
 			}
@@ -971,9 +971,9 @@ bool CHudSpectator::IsActivePlayer(cl_entity_t * ent)
 
 bool CHudSpectator::ParseOverviewFile( )
 {
-	char filename[255] = { 0 };
-	char levelname[255] = { 0 };
-	char token[1024] = { 0 };
+	char filename[255];
+	char levelname[255];
+	char token[1024];
 	float height;
 
 	char *pfile  = NULL;
@@ -999,7 +999,7 @@ bool CHudSpectator::ParseOverviewFile( )
 	strncpy(levelname, m_OverviewData.map + 5, sizeof( levelname ));
 	levelname[strlen(levelname)-4] = 0;
 	
-	sprintf(filename, "overviews/%s.txt", levelname );
+	snprintf(filename, sizeof( filename ), "overviews/%s.txt", levelname );
 
 	pfile = (char *)gEngfuncs.COM_LoadFile( filename, 5, NULL);
 

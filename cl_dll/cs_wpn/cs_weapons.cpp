@@ -609,7 +609,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 	if ((button & IN_ATTACK2) && m_flNextSecondaryAttack <= UTIL_WeaponTimeBase())
 	{
-		if (pszAmmo2() && !m_pPlayer->m_rgAmmo[SecondaryAmmoIndex()])
+		if (pszAmmo2() && !m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType])
 			m_fFireOnEmpty = TRUE;
 
 		SecondaryAttack();
@@ -617,7 +617,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 	}
 	else if ((m_pPlayer->pev->button & IN_ATTACK) && m_flNextPrimaryAttack <= UTIL_WeaponTimeBase())
 	{
-		if ((!m_iClip && pszAmmo1()) || (iMaxClip() == WEAPON_NOCLIP && !m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()]))
+		if ((!m_iClip && pszAmmo1()) || (iMaxClip() == WEAPON_NOCLIP && !m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]))
 			m_fFireOnEmpty = TRUE;
 
 		if (m_pPlayer->m_bCanShoot == true)
@@ -680,6 +680,12 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		WeaponIdle();
 		return;
 	}
+}
+
+float CBasePlayerWeapon::GetNextAttackDelay(float delay)
+{
+	float flNextAttack = UTIL_WeaponTimeBase() + delay;
+	return flNextAttack;
 }
 
 /*
@@ -818,8 +824,9 @@ char UTIL_TextureHit(TraceResult *ptr, Vector vecSrc, Vector vecEnd)
 	return chTextureType;
 }
 
-CBaseEntity *UTIL_PlayerByIndex(int playerIndex)
+CBasePlayer *UTIL_PlayerByIndex(int playerIndex)
 {
+#if 0
 	CBaseEntity *pPlayer = NULL;
 
 	if (playerIndex > 0 && playerIndex <= gpGlobals->maxClients)
@@ -831,6 +838,15 @@ CBaseEntity *UTIL_PlayerByIndex(int playerIndex)
 	}
 
 	return pPlayer;
+#else
+	return &player;
+#endif
+}
+
+void Broadcast( const char *msg, int pitch ); // hud/radio
+void CBasePlayer::Radio(const char *msg_id, const char *msg_verbose, int pitch, bool showIcon)
+{
+	Broadcast( msg_id, pitch );
 }
 
 void UTIL_MakeVectors( const Vector &vec )

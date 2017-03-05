@@ -45,6 +45,8 @@ int CHudNVG::Init()
 	HOOK_MESSAGE(NVGToggle)
 	HOOK_COMMAND("+nvgadjust", NVGAdjustUp);
 	HOOK_COMMAND("-nvgadjust", NVGAdjustDown);
+	HOOK_COMMAND("nvgadjustup", NVGAdjustUp);
+	HOOK_COMMAND("nvgadjustdown", NVGAdjustDown);
 
 	cl_fancy_nvg = CVAR_CREATE( "cl_fancy_nvg", "0", FCVAR_ARCHIVE );
 
@@ -131,10 +133,12 @@ int CHudNVG::MsgFunc_NVGToggle(const char *pszName, int iSize, void *pbuf)
 
 void CHudNVG::UserCmd_NVGAdjustDown()
 {
-	m_iAlpha = max( 220, m_iAlpha + 20 );
+m_iAlpha = m_iAlpha + 20;
+m_iAlpha = min( 220, m_iAlpha );
 }
 
 void CHudNVG::UserCmd_NVGAdjustUp()
 {
-	m_iAlpha = min( 30, m_iAlpha - 20 );
+m_iAlpha = m_iAlpha - 20;
+m_iAlpha = max( 30, m_iAlpha );
 }

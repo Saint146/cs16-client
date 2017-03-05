@@ -165,9 +165,10 @@ int CHudRadar::InitBuiltinTextures( void )
 		*textures[i].texnum = gRenderAPI.GL_CreateTexture( textures[i].name, textures[i].w, textures[i].h, data2D, defFlags );
 		if( *textures[i].texnum == 0 )
 		{
-			for( size_t j = 0; j < i; i++ )
+			// it's maybe safer to leave texture render uninitialized and use classic fillrgba
+			for( size_t j = 0; j < i; j++ )
 			{
-				gRenderAPI.GL_FreeTexture( *textures[i].texnum );
+				gRenderAPI.GL_FreeTexture( *textures[j].texnum );
 			}
 			return 0;
 		}
@@ -315,7 +316,6 @@ int CHudRadar::Draw(float flTime)
 		gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );
 		gEngfuncs.pTriAPI->CullFace( TRI_NONE );
 		gEngfuncs.pTriAPI->Brightness( 1 );
-		gRenderAPI.GL_SelectTexture( 0 );
 	}
 
 	for(int i = 0; i < 33; i++)
@@ -402,11 +402,13 @@ void CHudRadar::DrawPlayerLocation()
 inline void CHudRadar::DrawColoredTexture( int x, int y, int size, byte r, byte g, byte b, byte a, int texHandle )
 {
 	gRenderAPI.GL_Bind( 0, texHandle );
+	gEngfuncs.pTriAPI->Begin( TRI_QUADS );
 	gEngfuncs.pTriAPI->Color4ub( r, g, b, a );
 	DrawUtils::Draw2DQuad( (iMaxRadius + x - size * 2) * gHUD.m_flScale,
 						   (iMaxRadius + y - size * 2) * gHUD.m_flScale,
 						   (iMaxRadius + x + size * 2) * gHUD.m_flScale,
 						   (iMaxRadius + y + size * 2) * gHUD.m_flScale);
+	gEngfuncs.pTriAPI->End();
 }
 
 

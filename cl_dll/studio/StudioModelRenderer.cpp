@@ -53,6 +53,7 @@ void CStudioModelRenderer::Init(void)
 	m_pCvarHiModels = IEngineStudio.GetCvar("cl_himodels");
 	m_pCvarDeveloper = IEngineStudio.GetCvar("developer");
 	m_pCvarDrawEntities = IEngineStudio.GetCvar("r_drawentities");
+	m_pCvarShadows = CVAR_CREATE("cl_shadows", "1", FCVAR_ARCHIVE );
 
 	m_pChromeSprite = IEngineStudio.GetChromeSprite();
 
@@ -315,7 +316,7 @@ void CStudioModelRenderer::StudioSlerpBones(vec4_t q1[], float pos1[][3], vec4_t
 	}
 }
 
-mstudioanim_t *CStudioModelRenderer::StudioGetAnim(model_t *m_pSubModel, mstudioseqdesc_t *pseqdesc)
+mstudioanim_t *CStudioModelRenderer::StudioGetAnim(model_t *pSubModel, mstudioseqdesc_t *pseqdesc)
 {
 	mstudioseqgroup_t *pseqgroup;
 	cache_user_t *paSequences;
@@ -325,12 +326,12 @@ mstudioanim_t *CStudioModelRenderer::StudioGetAnim(model_t *m_pSubModel, mstudio
 	if (pseqdesc->seqgroup == 0)
 		return (mstudioanim_t *)((byte *)m_pStudioHeader + pseqgroup->data + pseqdesc->animindex);
 
-	paSequences = (cache_user_t *)m_pSubModel->submodels;
+	paSequences = (cache_user_t *)pSubModel->submodels;
 
 	if (paSequences == NULL)
 	{
 		paSequences = (cache_user_t *)IEngineStudio.Mem_Calloc(16, sizeof(cache_user_t));
-		m_pSubModel->submodels = (dmodel_t *)paSequences;
+		pSubModel->submodels = (dmodel_t *)paSequences;
 	}
 
 	if (!IEngineStudio.Cache_Check((struct cache_user_s *)&(paSequences[pseqdesc->seqgroup])))
@@ -748,8 +749,13 @@ void CStudioModelRenderer::StudioSetupBones(void)
 					bonematrix[1][2] = -bonematrix[1][2];
 					bonematrix[1][3] = -bonematrix[1][3];
 
-					if( gHUD.hand_xash && gHUD.hand_xash->value != 0.0f )
-						IEngineStudio.StudioSetCullState( 1 ); // set backface culling
+					// hand cvar is forced to 0
+					//if( gHUD.hand_xash && gHUD.hand_xash->value != 0.0f )
+					IEngineStudio.StudioSetCullState( 1 ); // set backface culling
+				}
+				else
+				{
+					IEngineStudio.StudioSetCullState( 0 );
 				}
 
 				ConcatTransforms((*m_protationmatrix), bonematrix, (*m_pbonetransform)[i]);
@@ -789,7 +795,7 @@ void CStudioModelRenderer::StudioSaveBones(void)
 
 }
 
-void CStudioModelRenderer::StudioMergeBones(model_t *m_pSubModel)
+void CStudioModelRenderer::StudioMergeBones(model_t *pSubModel)
 {
 	int i, j;
 	double f;
@@ -816,7 +822,7 @@ void CStudioModelRenderer::StudioMergeBones(model_t *m_pSubModel)
 	{
 	}*/
 
-	panim = StudioGetAnim(m_pSubModel, pseqdesc);
+	panim = StudioGetAnim(pSubModel, pseqdesc);
 	StudioCalcRotations(pos, q, pseqdesc, panim, f);
 
 	pbones = (mstudiobone_t *)((byte *)m_pStudioHeader + m_pStudioHeader->boneindex);
@@ -1334,6 +1340,8 @@ void CStudioModelRenderer::StudioRenderFinal_Software(void)
 	IEngineStudio.RestoreRenderer();
 }
 
+int twice;
+
 void CStudioModelRenderer::StudioRenderFinal_Hardware(void)
 {
 	int i;
@@ -1371,6 +1379,39 @@ void CStudioModelRenderer::StudioRenderFinal_Hardware(void)
 		IEngineStudio.StudioDrawHulls();
 		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
 	}
+
+	//if (m_pCvarDrawEntities->value == 5)
+	//	IEngineStudio.StudioDrawAbsBBox();
+
+#if 1
+	if( m_pCvarDrawEntities->value == 8 && !m_pCurrentEntity->curstate.iuser4 )
+	{
+		Vector interpOrigin = m_pCurrentEntity->origin;
+
+		m_pCurrentEntity->origin = m_pCurrentEntity->curstate.origin;
+
+		m_pCurrentEntity->curstate.iuser4 = true;
+
+		if( m_pCurrentEntity->player )
+		{
+			StudioDrawPlayer( STUDIO_RENDER, m_pplayer );
+		}
+		else
+		{
+			StudioDrawModel( STUDIO_RENDER );
+		}
+
+		//m_pPlayerInfo = NULL;
+
+		gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
+		IEngineStudio.StudioDrawHulls();
+		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
+
+		m_pCurrentEntity->origin = interpOrigin;
+	}
+#endif
+
+	//m_pCurrentEntity->syncbase = false;
 
 	IEngineStudio.RestoreRenderer();
 }

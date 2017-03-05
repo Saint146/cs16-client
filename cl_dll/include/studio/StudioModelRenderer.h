@@ -31,12 +31,12 @@ public:
 	virtual int StudioDrawPlayer(int flags, struct entity_state_s *pplayer);
 
 public:
-	virtual mstudioanim_t *StudioGetAnim(model_t *m_pSubModel, mstudioseqdesc_t *pseqdesc);
+	virtual mstudioanim_t *StudioGetAnim(model_t *pSubModel, mstudioseqdesc_t *pseqdesc);
 	virtual void StudioSetUpTransform(int trivial_accept);
 	virtual void StudioSetupBones(void);
 	virtual void StudioCalcAttachments(void);
 	virtual void StudioSaveBones(void);
-	virtual void StudioMergeBones(model_t *m_pSubModel);
+	virtual void StudioMergeBones(model_t *pSubModel);
 	virtual float StudioEstimateInterpolant(void);
 	virtual float StudioEstimateFrame(mstudioseqdesc_t *pseqdesc);
 	virtual void StudioFxTransform(cl_entity_t *ent, float transform[3][4]);
@@ -66,6 +66,7 @@ public:
 	cvar_t *m_pCvarHiModels;
 	cvar_t *m_pCvarDeveloper;
 	cvar_t *m_pCvarDrawEntities;
+	cvar_t *m_pCvarShadows;
 	cl_entity_t *m_pCurrentEntity;
 	model_t *m_pRenderModel;
 	player_info_t *m_pPlayerInfo;
@@ -92,6 +93,7 @@ public:
 	float (*m_paliastransform)[3][4];
 	float (*m_pbonetransform)[MAXSTUDIOBONES][3][4];
 	float (*m_plighttransform)[MAXSTUDIOBONES][3][4];
+	entity_state_t *m_pplayer;
 };
 
 #endif
