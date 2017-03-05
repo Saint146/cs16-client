@@ -764,6 +764,8 @@ int CGameStudioModelRenderer::StudioDrawPlayer(int flags, entity_state_t *pplaye
 	int iret = 0;
 	bool isLocalPlayer = false;
 
+	m_pplayer = pplayer;
+
 	if (m_bLocal && IEngineStudio.GetCurrentEntity() == gEngfuncs.GetLocalPlayer())
 		isLocalPlayer = true;
 
@@ -778,7 +780,7 @@ int CGameStudioModelRenderer::StudioDrawPlayer(int flags, entity_state_t *pplaye
 	if (isLocalPlayer)
 		RestorePlayerState(pplayer);
 
-	if( gHUD.cl_shadows->value != 0.0f )
+	if( m_pCvarShadows->value != 0.0f )
 	{
 		Vector chestpos;
 
@@ -794,6 +796,8 @@ int CGameStudioModelRenderer::StudioDrawPlayer(int flags, entity_state_t *pplaye
 			}
 		}
 	}
+
+	m_pplayer = NULL;
 
 	return iret;
 }

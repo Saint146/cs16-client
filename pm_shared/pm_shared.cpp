@@ -1375,7 +1375,7 @@ void PM_AirMove()
 
 qboolean PM_InWater()
 {
-	return (pmove->waterlevel > 1);
+	return (pmove->waterlevel > 1); // -V602
 }
 
 // Sets pmove->waterlevel and pmove->watertype values.
@@ -1447,7 +1447,7 @@ qboolean PM_CheckWater()
 		}
 	}
 
-	return pmove->waterlevel > 1;
+	return PM_InWater();
 }
 
 void PM_CatagorizePosition()

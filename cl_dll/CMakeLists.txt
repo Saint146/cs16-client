@@ -54,7 +54,7 @@ if(CMAKE_SIZEOF_VOID_P MATCHES "8")
     endif()
 endif()
 
-find_package(SDL2 REQUIRED)
+# find_package(SDL2 REQUIRED)
 
 set (CLDLL_LIBRARY client)
 
@@ -201,6 +201,7 @@ set (CLDLL_SOURCES
     ./unicode_strtools.cpp
 	./draw_util.cpp
 	../common/interface.cpp
+	./cvar_checker.cpp
 
 	./include/camera.h
 	./include/cl_dll.h
@@ -223,6 +224,7 @@ set (CLDLL_SOURCES
 	./include/wrect.h
 	./include/math/neon_mathfun.h
 	./include/math/sse_mathfun.h
+	./include/cvar_checker.h
 
 	${PLAYERMOVE_SRCS}
 	${HUD_SRCS}
@@ -250,11 +252,13 @@ add_definitions( -D_CS16CLIENT_ENABLE_GSRC_SUPPORT
 	-D_DEBUG  -D_CS16CLIENT_ALLOW_SPECIAL_SCRIPTING
 	-Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp )
 
-include(../cmake/PVS-Studio.cmake)
-pvs_studio_add_target(TARGET analyze ALL
-	FORMAT tasklist
-	LOG "${CMAKE_CURRENT_LIST_DIR}/cs16client.tasks"
-	ANALYZE ${CLDLL_LIBRARY})
+if( CS16CLIENT_ANALYZE )
+	include(../cmake/PVS-Studio.cmake)
+	pvs_studio_add_target(TARGET analyze ALL
+		FORMAT tasklist
+		LOG "${CMAKE_CURRENT_LIST_DIR}/cs16client.tasks"
+		ANALYZE ${CLDLL_LIBRARY})
+endif()
 
 target_link_libraries( ${CLDLL_LIBRARY} ${CMAKE_DL_LIBS} -lSDL2 )
 

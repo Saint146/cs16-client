@@ -119,17 +119,17 @@ int CHudHealth::VidInit(void)
 {
 	m_hSprite = LoadSprite(PAIN_NAME);
 
-	m_vAttackPos[ATK_FRONT].x = ScreenWidth  / 2 - SPR_Width ( m_hSprite, 0 ) / 2;
-	m_vAttackPos[ATK_FRONT].y = ScreenHeight / 2 - SPR_Height( m_hSprite, 0 ) * 3;
+	m_vAttackPos[ATK_FRONT].x = ScreenWidth  / 2.0 - SPR_Width ( m_hSprite, 0 ) / 2.0;
+	m_vAttackPos[ATK_FRONT].y = ScreenHeight / 2.0 - SPR_Height( m_hSprite, 0 ) * 3;
 
-	m_vAttackPos[ATK_RIGHT].x = ScreenWidth  / 2 + SPR_Width ( m_hSprite, 1 ) * 2;
-	m_vAttackPos[ATK_RIGHT].y = ScreenHeight / 2 - SPR_Height( m_hSprite, 1 ) / 2;
+	m_vAttackPos[ATK_RIGHT].x = ScreenWidth  / 2.0 + SPR_Width ( m_hSprite, 1 ) * 2;
+	m_vAttackPos[ATK_RIGHT].y = ScreenHeight / 2.0 - SPR_Height( m_hSprite, 1 ) / 2.0;
 
-	m_vAttackPos[ATK_REAR ].x = ScreenWidth  / 2 - SPR_Width ( m_hSprite, 2 ) / 2;
-	m_vAttackPos[ATK_REAR ].y = ScreenHeight / 2 + SPR_Height( m_hSprite, 2 ) * 2;
+	m_vAttackPos[ATK_REAR ].x = ScreenWidth  / 2.0 - SPR_Width ( m_hSprite, 2 ) / 2.0;
+	m_vAttackPos[ATK_REAR ].y = ScreenHeight / 2.0 + SPR_Height( m_hSprite, 2 ) * 2;
 
-	m_vAttackPos[ATK_LEFT ].x = ScreenWidth  / 2 - SPR_Width ( m_hSprite, 3 ) * 3;
-	m_vAttackPos[ATK_LEFT ].y = ScreenHeight / 2 - SPR_Height( m_hSprite, 3 ) / 2;
+	m_vAttackPos[ATK_LEFT ].x = ScreenWidth  / 2.0 - SPR_Width ( m_hSprite, 3 ) * 3;
+	m_vAttackPos[ATK_LEFT ].y = ScreenHeight / 2.0 - SPR_Height( m_hSprite, 3 ) / 2.0;
 
 
 	m_HUD_dmg_bio = gHUD.GetSpriteIndex( "dmg_bio" ) + 1;
@@ -471,55 +471,53 @@ void CHudHealth::UpdateTiles(float flTime, long bitsDamage)
 
 int CHudHealth :: MsgFunc_ClCorpse(const char *pszName, int iSize, void *pbuf)
 {
-#if 0
 	BufferReader reader(pbuf, iSize);
+	char *pModel, szModel[64];
+	Vector origin, angles;
+	float delay;
+	int seq, classID, teamID, playerID;
 
-	char szModel[64];
+	pModel		= reader.ReadString();
+	origin.x	= reader.ReadLong() / 128.0f;
+	origin.y	= reader.ReadLong() / 128.0f;
+	origin.z	= reader.ReadLong() / 128.0f;
+	angles		= reader.ReadCoordVector();
+	delay		= reader.ReadLong() / 100.0f;
+	seq			= reader.ReadByte();
+	classID		= reader.ReadByte();
+	teamID		= reader.ReadByte();
+	playerID	= reader.ReadByte();
 
-	char *pModel = reader.ReadString();
-	Vector origin;
-	origin.x = reader.ReadLong() / 128.0f;
-	origin.y = reader.ReadLong() / 128.0f;
-	origin.z = reader.ReadLong() / 128.0f;
-	Vector angles;
-	angles.x = reader.ReadCoord();
-	angles.y = reader.ReadCoord();
-	angles.z = reader.ReadCoord();
-	float delay = reader.ReadLong() / 100.0f;
-	int sequence = reader.ReadByte();
-	int classID = reader.ReadByte();
-	int teamID = reader.ReadByte();
-	int playerID = reader.ReadByte();
-
-	if( !cl_minmodels->value )
+	if( !gHUD.cl_minmodels->value )
 	{
 		if( !strstr(pModel, "models/") )
+			snprintf( szModel, sizeof(szModel), "models/player/%s/%s.mdl", pModel, pModel );
+		else
+			strncpy( szModel, pModel, sizeof( szModel ));
+	}
+	else
+	{
+		int modelidx;
+		if( teamID == TEAM_TERRORIST ) // terrorists
 		{
-			snprintf(szModel, sizeof(szModel), "models/player/%s/%s.mdl", pModel, pModel );
+			modelidx = gHUD.cl_min_t->value;
+			if( !BIsValidTModelIndex(modelidx) )
+				modelidx = PLAYERMODEL_LEET;
 		}
-	}
-	else if( teamID == 1 ) // terrorists
-	{
-		int modelidx = cl_min_t->value;
-		if( BIsValidTModelIndex(modelidx) )
-			strncpy(szModel, sPlayerModelFiles[modelidx], sizeof(szModel));
-		else strncpy(szModel, sPlayerModelFiles[1], sizeof(szModel) ); // set leet.mdl
-	}
-	else if( teamID == 2 ) // ct
-	{
-		int modelidx = cl_min_ct->value;
+		else if( teamID == TEAM_CT ) // ct
+		{
+			if( g_PlayerExtraInfo[playerID].vip )
+				modelidx = PLAYERMODEL_VIP;
+			else if( !BIsValidCTModelIndex( gHUD.cl_min_ct->value ))
+				modelidx = PLAYERMODEL_GIGN;
+			else modelidx = gHUD.cl_min_ct->value;
+		}
+		else modelidx = PLAYERMODEL_PLAYER;
 
-		if( g_PlayerExtraInfo[playerID].vip )
-			strncpy( szModel, sPlayerModelFiles[3], sizeof(szModel) ); // vip.mdl
-		else if( BIsValidCTModelIndex( modelidx ) )
-			strncpy( szModel, sPlayerModelFiles[ modelidx ], sizeof(szModel));
-		else strncpy( szModel, sPlayerModelFiles[2], sizeof(szModel) ); // gign.mdl
+		strncpy( szModel, sPlayerModelFiles[modelidx], sizeof( szModel ) );
 	}
-	else strncpy( szModel, sPlayerModelFiles[0], sizeof(szModel) ); // player.mdl
-
-	CreateCorpse( &origin, &angles, szModel, delay, sequence, classID );
-#endif
-   return 0;
+	CreateCorpse( origin, angles, szModel, delay, seq, classID );
+	return 0;
 }
 
 void CHudHealth::UserCmd_Fart( void )

@@ -551,7 +551,8 @@ float CL_KeyState (kbutton_t *key)
 	if ( impulseup && !impulsedown )
 	{
 		// released this frame?
-		val = down ? 0.0 : 0.0;
+		// val = down ? 0.0 : 0.0;
+		val = 0.0;
 	}
 
 	if ( !impulsedown && !impulseup )

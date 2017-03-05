@@ -48,3 +48,5 @@ android/assets/extras.pak
 *-build
 *admob-id.xml
 *.tasks
+regamebuild/
+*.tasks

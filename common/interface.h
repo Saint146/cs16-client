@@ -106,7 +106,7 @@ enum
 extern "C"
 {
 	EXPORT_FUNCTION IBaseInterface* CreateInterface(const char *pName, int *pReturnCode);
-};
+}
 
 
 // Handle to an interface (HInterfaceModule_t* is just there for type safety).
